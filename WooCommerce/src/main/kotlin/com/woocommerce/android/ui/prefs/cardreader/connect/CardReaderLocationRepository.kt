@@ -19,9 +19,6 @@ class CardReaderLocationRepository @Inject constructor(
                 is WCTerminalStoreLocationErrorType.MissingAddress -> {
                     LocationIdFetchingResult.Error.MissingAddress(type.addressEditingUrl)
                 }
-                is WCTerminalStoreLocationErrorType.InvalidPostalCode -> {
-                    LocationIdFetchingResult.Error.InvalidPostalCode
-                }
                 else -> LocationIdFetchingResult.Error.Other(result.error?.message)
             }
         } else {
@@ -32,7 +29,6 @@ class CardReaderLocationRepository @Inject constructor(
     sealed class LocationIdFetchingResult {
         sealed class Error : LocationIdFetchingResult() {
             data class MissingAddress(val url: String) : Error()
-            object InvalidPostalCode : Error()
             data class Other(val error: String?) : Error()
         }
 
