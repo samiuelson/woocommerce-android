@@ -48,7 +48,7 @@ class CardReaderOnboardingChecker @Inject constructor(
             }
     }
 
-    @Suppress("ReturnCount", "ComplexMethod", "NestedBlockDepth")
+    @Suppress("ReturnCount", "ComplexMethod")
     private suspend fun fetchOnboardingState(): CardReaderOnboardingState {
         val countryCode = getStoreCountryCode()
         if (!isCountrySupported(countryCode)) return StoreCountryNotSupported(countryCode)
@@ -93,14 +93,14 @@ class CardReaderOnboardingChecker @Inject constructor(
     private fun isBothPluginsActivated(
         wcPayPluginInfo: WCPluginModel?,
         stripePluginInfo: WCPluginModel?
-    ) = (stripeExtensionFeatureFlag.isEnabled()
-        && isPluginActivated(wcPayPluginInfo)
-        && isPluginActivated(stripePluginInfo))
+    ) = stripeExtensionFeatureFlag.isEnabled() &&
+        isPluginActivated(wcPayPluginInfo) &&
+        isPluginActivated(stripePluginInfo)
 
     private fun getPreferredPlugin(stripePluginInfo: WCPluginModel?, wcPayPluginInfo: WCPluginModel?): PluginWrapper =
-        if (stripeExtensionFeatureFlag.isEnabled()
-            && isPluginActivated(stripePluginInfo)
-            && !isPluginActivated(wcPayPluginInfo)
+        if (stripeExtensionFeatureFlag.isEnabled() &&
+            isPluginActivated(stripePluginInfo) &&
+            !isPluginActivated(wcPayPluginInfo)
         ) {
             PluginWrapper(STRIPE_TERMINAL_GATEWAY, stripePluginInfo)
         } else {
@@ -185,7 +185,6 @@ private data class PluginWrapper(val type: PluginType, val info: WCPluginModel?)
 enum class PluginType(val minSupportedVersion: String) {
     WOOCOMMERCE_PAYMENTS(SUPPORTED_WCPAY_VERSION),
     STRIPE_TERMINAL_GATEWAY(SUPPORTED_STRIPE_TERMINAL_VERSION)
-
 }
 
 sealed class CardReaderOnboardingState {
