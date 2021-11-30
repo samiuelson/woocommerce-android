@@ -57,12 +57,20 @@ class CardReaderOnboardingViewModel @Inject constructor(
                 CardReaderOnboardingState.WcpayNotInstalled ->
                     viewState.value =
                         OnboardingViewState.WCPayError.WCPayNotInstalledState(::refreshState, ::onLearnMoreClicked)
-                CardReaderOnboardingState.WcpayUnsupportedVersion ->
-                    viewState.value =
-                        OnboardingViewState.WCPayError.WCPayUnsupportedVersionState(
-                            ::refreshState,
-                            ::onLearnMoreClicked
-                        )
+                is CardReaderOnboardingState.PluginUnsupportedVersion ->
+                    when (state.pluginType) {
+                        PluginType.WOOCOMMERCE_PAYMENTS ->
+                            viewState.value =
+                                OnboardingViewState.WCPayError.WCPayUnsupportedVersionState(
+                                    ::refreshState,
+                                    ::onLearnMoreClicked
+                                )
+                        PluginType.STRIPE_TERMINAL_GATEWAY ->
+                            viewState.value =
+                                OnboardingViewState.StripeTerminalError.StripeTerminalUnsupportedVersionState(
+                                    ::refreshState, ::onLearnMoreClicked
+                                )
+                    }
                 CardReaderOnboardingState.WcpayNotActivated ->
                     viewState.value =
                         OnboardingViewState.WCPayError.WCPayNotActivatedState(::refreshState, ::onLearnMoreClicked)
@@ -118,11 +126,6 @@ class CardReaderOnboardingViewModel @Inject constructor(
                         ::onContactSupportClicked,
                         ::onLearnMoreClicked
                     )
-                CardReaderOnboardingState.StripeTerminal.UnsupportedVersion ->
-                    viewState.value =
-                        OnboardingViewState.StripeTerminalError.StripeTerminalUnsupportedVersionState(
-                            ::refreshState, ::onLearnMoreClicked
-                        )
                 CardReaderOnboardingState.WcpayAndStripeActivated ->
                     viewState.value =
                         OnboardingViewState.WcPayAndStripeInstalledState(
@@ -154,10 +157,10 @@ class CardReaderOnboardingViewModel @Inject constructor(
             CardReaderOnboardingState.WcpayNotInstalled -> "wcpay_not_installed"
             is CardReaderOnboardingState.SetupNotCompleted ->
                 "${getPluginNameForAnalyticsFrom(state.pluginType)}_not_setup"
-            CardReaderOnboardingState.WcpayUnsupportedVersion -> "wcpay_unsupported_version"
+            is CardReaderOnboardingState.PluginUnsupportedVersion ->
+                "${getPluginNameForAnalyticsFrom(state.pluginType)}_unsupported_version"
             CardReaderOnboardingState.GenericError -> "generic_error"
             CardReaderOnboardingState.NoConnectionError -> "no_connection_error"
-            CardReaderOnboardingState.StripeTerminal.UnsupportedVersion -> "stripe_unsupported_version"
             CardReaderOnboardingState.WcpayAndStripeActivated -> "wcpay_and_stripe_installed_and_activated"
         }
 
@@ -236,14 +239,8 @@ class CardReaderOnboardingViewModel @Inject constructor(
             val refreshButtonAction: () -> Unit,
             val onLearnMoreActionClicked: (() -> Unit)
         ) : OnboardingViewState(R.layout.fragment_card_reader_onboarding_generic_error) {
-            val contactSupportLabel = UiString.UiStringRes(
-                stringRes = R.string.card_reader_onboarding_country_not_supported_contact_support,
-                containsHtml = true
-            )
-            val learnMoreLabel = UiString.UiStringRes(
-                stringRes = R.string.card_reader_onboarding_country_not_supported_learn_more,
-                containsHtml = true
-            )
+            val contactSupportLabel = UiString.UiStringText("NOT IMPLEMENTED")
+            val learnMoreLabel = UiString.UiStringText("NOT IMPLEMENTED")
             val illustration = R.drawable.img_products_error
         }
 
@@ -254,7 +251,7 @@ class CardReaderOnboardingViewModel @Inject constructor(
         }
 
         class UnsupportedCountryState(
-            val countryDisplayName: String,
+            countryDisplayName: String,
             val onContactSupportActionClicked: (() -> Unit),
             val onLearnMoreActionClicked: (() -> Unit)
         ) : OnboardingViewState(R.layout.fragment_card_reader_onboarding_unsupported_country) {
