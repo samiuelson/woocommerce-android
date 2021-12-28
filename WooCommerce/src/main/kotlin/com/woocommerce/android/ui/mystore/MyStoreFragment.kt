@@ -9,7 +9,9 @@ import android.view.ViewGroup.LayoutParams
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.snackbar.Snackbar
@@ -18,7 +20,6 @@ import com.google.android.play.core.review.ReviewManagerFactory
 import com.woocommerce.android.AppPrefs
 import com.woocommerce.android.FeedbackPrefs
 import com.woocommerce.android.FeedbackPrefs.userFeedbackIsDue
-import com.woocommerce.android.NavGraphMainDirections
 import com.woocommerce.android.R
 import com.woocommerce.android.R.attr
 import com.woocommerce.android.analytics.AnalyticsTracker
@@ -33,13 +34,13 @@ import com.woocommerce.android.tools.SelectedSite
 import com.woocommerce.android.ui.base.TopLevelFragment
 import com.woocommerce.android.ui.base.UIMessageResolver
 import com.woocommerce.android.ui.main.MainNavigationRouter
-import com.woocommerce.android.ui.mystore.MyStoreViewModel.*
-import com.woocommerce.android.ui.mystore.MyStoreViewModel.MyStoreEvent.OpenTopPerformer
+import com.woocommerce.android.ui.mystore.MyStoreViewModel.JetpackBenefitsBannerUiModel
 import com.woocommerce.android.util.*
 import com.woocommerce.android.widgets.WCEmptyView.EmptyViewType
 import com.woocommerce.android.widgets.WooClickableSpan
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.util.NetworkUtils
 import java.util.Calendar
@@ -168,74 +169,51 @@ class MyStoreFragment :
 
         tabLayout.addOnTabSelectedListener(tabSelectedListener)
 
-        setupStateObservers()
-    }
+        lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    showChartLoading(state.isLoadingRevenue)
+                    showStatsError(state.revenueError)
+                    showStats(state.revenueStats, activeGranularity)
 
-    @Suppress("ComplexMethod")
-    private fun setupStateObservers() {
-        viewModel.revenueStatsState.observe(viewLifecycleOwner) { revenueStats ->
-            when (revenueStats) {
-                is RevenueStatsViewState.Content -> showStats(revenueStats.revenueStats, revenueStats.granularity)
-                RevenueStatsViewState.GenericError -> showStatsError()
-                RevenueStatsViewState.Loading -> showChartSkeleton(true)
-                RevenueStatsViewState.PluginNotActiveError -> updateStatsAvailabilityError()
-            }
-        }
-        viewModel.visitorStatsState.observe(viewLifecycleOwner) { stats ->
-            when (stats) {
-                is VisitorStatsViewState.Content -> showVisitorStats(stats.stats)
-                VisitorStatsViewState.Error -> binding.myStoreStats.showVisitorStatsError()
-                is VisitorStatsViewState.JetpackCpConnected -> onJetpackCpConnected(stats.benefitsBanner)
-            }
-        }
-        viewModel.topPerformersState.observe(viewLifecycleOwner) { topPerformers ->
-            when (topPerformers) {
-                is TopPerformersViewState.Loading -> showTopPerformersLoading()
-                is TopPerformersViewState.Error -> showTopPerformersError()
-                is TopPerformersViewState.Content -> showTopPerformers(
-                    topPerformers.topPerformers,
-                    topPerformers.granularity
-                )
-            }
-        }
-        viewModel.hasOrders.observe(viewLifecycleOwner) { newValue ->
-            when (newValue) {
-                OrderState.Empty -> showEmptyView(true)
-                OrderState.AtLeastOne -> showEmptyView(false)
-            }
-        }
-        viewModel.event.observe(viewLifecycleOwner) { event ->
-            when (event) {
-                is OpenTopPerformer -> findNavController().navigateSafely(
-                    NavGraphMainDirections.actionGlobalProductDetailFragment(
-                        remoteProductId = event.productId,
-                        isTrashEnabled = false
-                    )
-                )
-                else -> event.isHandled = false
+                    showTopPerformersLoading(state.isLoadingTopPerformers)
+                    showTopPerformersError(state.topPerformersError)
+                    showTopPerformers(state.topPerformers, activeGranularity)
+
+                    showVisitorStats(state.visitorsStats)
+                    showVisitorStatsError(state.visitorsError)
+
+                    showEmptyVisitorStatsForJetpackCP(state.jetpackCpEnabled)
+                    showEmptyView(!state.hasOrders)
+                    updateStatsAvailabilityError(state.jetPackPluginNotActive)
+                    showJetpackBenefitsBanner(state.jetpackBenefitsBanner)
+                }
             }
         }
     }
 
-    private fun onJetpackCpConnected(benefitsBanner: BenefitsBannerUiModel) {
-        showEmptyVisitorStatsForJetpackCP()
-        if (benefitsBanner.show) {
+    private fun showJetpackBenefitsBanner(jetpackBenefitsBanner: JetpackBenefitsBannerUiModel) {
+        if (jetpackBenefitsBanner.show) {
             binding.jetpackBenefitsBanner.dismissButton.setOnClickListener {
-                benefitsBanner.onDismiss()
+                jetpackBenefitsBanner.onDismiss()
             }
+            binding.jetpackBenefitsBanner.root.isVisible = true
+        } else {
+            binding.jetpackBenefitsBanner.root.isVisible = false
         }
-        if (benefitsBanner.show && !binding.jetpackBenefitsBanner.root.isVisible) {
-            AnalyticsTracker.track(
-                stat = Stat.FEATURE_JETPACK_BENEFITS_BANNER,
-                properties = mapOf(AnalyticsTracker.KEY_JETPACK_BENEFITS_BANNER_ACTION to "shown")
-            )
-        }
-        binding.jetpackBenefitsBanner.root.isVisible = benefitsBanner.show
     }
 
-    private fun showTopPerformersLoading() {
-        binding.myStoreTopPerformers.showErrorView(false)
-        binding.myStoreTopPerformers.showSkeleton(true)
+    private fun showVisitorStatsError(visitorsError: Boolean) {
+        if (visitorsError) {
+            binding.myStoreStats.showVisitorStatsError()
+        }
+    }
+
+    private fun showTopPerformersLoading(loadingTopPerformers: Boolean) {
+        if (loadingTopPerformers) {
+            binding.myStoreTopPerformers.showErrorView(false)
+            binding.myStoreTopPerformers.showSkeleton(true)
+        }
     }
 
     @Suppress("ForbiddenComment")
@@ -313,23 +291,28 @@ class MyStoreFragment :
         if (activeGranularity == granularity) {
             addTabLayoutToAppBar()
             binding.myStoreStats.showErrorView(false)
-            showChartSkeleton(false)
+            showChartLoading(false)
             binding.myStoreStats.updateView(revenueStatsModel)
             myStoreDateBar.updateDateRangeView(revenueStatsModel, activeGranularity)
         }
     }
 
-    private fun showStatsError() {
-        showChartSkeleton(false)
-        binding.myStoreStats.showErrorView(true)
-        showErrorSnack()
+    private fun showStatsError(show: Boolean) {
+        if (show) {
+            showStats(null, activeGranularity)
+            showChartLoading(false)
+            binding.myStoreStats.showErrorView(true)
+            showErrorSnack()
+        }
     }
 
-    private fun updateStatsAvailabilityError() {
-        binding.myStoreRefreshLayout.visibility = View.GONE
-        WooAnimUtils.fadeIn(binding.statsErrorScrollView)
-        removeTabLayoutFromAppBar()
-        showChartSkeleton(false)
+    private fun updateStatsAvailabilityError(jetPackPluginNotActive: Boolean) {
+        if (jetPackPluginNotActive) {
+            binding.myStoreRefreshLayout.visibility = View.GONE
+            WooAnimUtils.fadeIn(binding.statsErrorScrollView)
+            removeTabLayoutFromAppBar()
+            showChartLoading(false)
+        }
     }
 
     private fun showTopPerformers(topPerformers: List<TopPerformerProductUiModel>, granularity: StatsGranularity) {
@@ -340,10 +323,13 @@ class MyStoreFragment :
         }
     }
 
-    private fun showTopPerformersError() {
-        binding.myStoreTopPerformers.showSkeleton(false)
-        binding.myStoreTopPerformers.showErrorView(true)
-        showErrorSnack()
+    private fun showTopPerformersError(topPerformersError: Boolean) {
+        if (topPerformersError) {
+            binding.myStoreTopPerformers.updateView(emptyList())
+            binding.myStoreTopPerformers.showSkeleton(false)
+            binding.myStoreTopPerformers.showErrorView(true)
+            showErrorSnack()
+        }
     }
 
     private fun showVisitorStats(visitorStats: Map<String, Int>) {
@@ -353,8 +339,8 @@ class MyStoreFragment :
         }
     }
 
-    private fun showEmptyVisitorStatsForJetpackCP() {
-        binding.myStoreStats.showEmptyVisitorStatsForJetpackCP()
+    private fun showEmptyVisitorStatsForJetpackCP(jetpackCpEnabled: Boolean) {
+        if (jetpackCpEnabled) binding.myStoreStats.showEmptyVisitorStatsForJetpackCP()
     }
 
     private fun showErrorSnack() {
@@ -372,7 +358,7 @@ class MyStoreFragment :
         binding.statsScrollView.smoothScrollTo(0, 0)
     }
 
-    private fun showChartSkeleton(show: Boolean) {
+    private fun showChartLoading(show: Boolean) {
         binding.myStoreStats.showErrorView(false)
         binding.myStoreStats.showSkeleton(show)
     }

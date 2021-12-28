@@ -1,8 +1,5 @@
 package com.woocommerce.android.ui.mystore
 
-import androidx.annotation.VisibleForTesting
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import com.woocommerce.android.AppPrefsWrapper
 import com.woocommerce.android.R
@@ -21,7 +18,7 @@ import com.woocommerce.android.viewmodel.MultiLiveEvent
 import com.woocommerce.android.viewmodel.ResourceProvider
 import com.woocommerce.android.viewmodel.ScopedViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.apache.commons.text.StringEscapeUtils
 import org.greenrobot.eventbus.Subscribe
@@ -56,24 +53,16 @@ class MyStoreViewModel @Inject constructor(
     private var activeStatsGranularity: StatsGranularity =
         savedState.get<StatsGranularity>(ACTIVE_STATS_GRANULARITY_KEY) ?: StatsGranularity.DAYS
 
-    private var _revenueStatsState = MutableLiveData<RevenueStatsViewState>()
-    val revenueStatsState: LiveData<RevenueStatsViewState> = _revenueStatsState
+    private val _uiState: MutableStateFlow<UiState> = MutableStateFlow(UiState())
+    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    private var _visitorStatsState = MutableLiveData<VisitorStatsViewState>()
-    val visitorStatsState: LiveData<VisitorStatsViewState> = _visitorStatsState
-
-    private var _topPerformersState = MutableLiveData<TopPerformersViewState>()
-    val topPerformersState: LiveData<TopPerformersViewState> = _topPerformersState
-
-    private var _hasOrders = MutableLiveData<OrderState>()
-    val hasOrders: LiveData<OrderState> = _hasOrders
-
-    @VisibleForTesting val refreshStoreStats = BooleanArray(StatsGranularity.values().size)
-    @VisibleForTesting val refreshTopPerformerStats = BooleanArray(StatsGranularity.values().size)
+    private val refreshStoreStats = BooleanArray(StatsGranularity.values().size)
+    private val refreshTopPerformerStats = BooleanArray(StatsGranularity.values().size)
 
     init {
         ConnectionChangeReceiver.getEventBus().register(this)
         refreshAll()
+        showJetpackBenefitsIfNeeded()
     }
 
     override fun onCleared() {
@@ -118,75 +107,77 @@ class MyStoreViewModel @Inject constructor(
         loadTopPerformersStats()
     }
 
+    private fun showJetpackBenefitsIfNeeded() {
+        val showBanner = if (selectedSite.getIfExists()?.isJetpackCPConnected == true) {
+            val daysSinceDismissal = TimeUnit.MILLISECONDS.toDays(
+                System.currentTimeMillis() - appPrefsWrapper.getJetpackBenefitsDismissalDate()
+            )
+            daysSinceDismissal >= DAYS_TO_REDISPLAY_JP_BENEFITS_BANNER
+        } else false
+
+        if (showBanner) {
+            AnalyticsTracker.track(
+                stat = AnalyticsTracker.Stat.FEATURE_JETPACK_BENEFITS_BANNER,
+                properties = mapOf(AnalyticsTracker.KEY_JETPACK_BENEFITS_BANNER_ACTION to "shown")
+            )
+        }
+        _uiState.update {
+            it.copy(
+                jetpackBenefitsBanner = JetpackBenefitsBannerUiModel(
+                    showBanner,
+                    ::onJetpackBannerDismiss
+                )
+            )
+        }
+    }
+
+    private fun onJetpackBannerDismiss() {
+        _uiState.update { it.copy(jetpackBenefitsBanner = JetpackBenefitsBannerUiModel(show = false)) }
+        appPrefsWrapper.recordJetpackBenefitsDismissal()
+        AnalyticsTracker.track(
+            stat = AnalyticsTracker.Stat.FEATURE_JETPACK_BENEFITS_BANNER,
+            properties = mapOf(AnalyticsTracker.KEY_JETPACK_BENEFITS_BANNER_ACTION to "dismissed")
+        )
+    }
+
     private fun loadStoreStats() {
         if (!networkStatus.isConnected()) {
             refreshStoreStats[activeStatsGranularity.ordinal] = true
-            _revenueStatsState.value = RevenueStatsViewState.Content(null, activeStatsGranularity)
-            _visitorStatsState.value = VisitorStatsViewState.Content(emptyMap())
+            _uiState.update { it.copy(revenueStats = null) }
+            _uiState.update { it.copy(visitorsStats = emptyMap()) }
             return
         }
 
+        _uiState.update { it.copy(isLoadingRevenue = true) }
         val forceRefresh = refreshStoreStats[activeStatsGranularity.ordinal]
         if (forceRefresh) {
             refreshStoreStats[activeStatsGranularity.ordinal] = false
         }
-        _revenueStatsState.value = RevenueStatsViewState.Loading
-        val selectedGranularity = activeStatsGranularity
         launch {
-            getStats(forceRefresh, selectedGranularity)
-                .collect {
-                    when (it) {
-                        is RevenueStatsSuccess -> onRevenueStatsSuccess(it, selectedGranularity)
-                        is RevenueStatsError -> _revenueStatsState.value = RevenueStatsViewState.GenericError
-                        PluginNotActive -> _revenueStatsState.value = RevenueStatsViewState.PluginNotActiveError
-                        is VisitorsStatsSuccess -> _visitorStatsState.value = VisitorStatsViewState.Content(it.stats)
-                        is VisitorsStatsError -> _visitorStatsState.value = VisitorStatsViewState.Error
-                        IsJetPackCPEnabled -> onJetPackCpConnected()
-                        is HasOrders -> _hasOrders.value = if (it.hasOrder) OrderState.AtLeastOne else OrderState.Empty
+            getStats(forceRefresh, activeStatsGranularity).collect { result ->
+                when (result) {
+                    is RevenueStatsSuccess -> {
+                        _uiState.update { it.copy(revenueStats = result.stats?.toStoreStatsUiModel()) }
+                        AnalyticsTracker.track(
+                            AnalyticsTracker.Stat.DASHBOARD_MAIN_STATS_LOADED,
+                            mapOf(AnalyticsTracker.KEY_RANGE to activeStatsGranularity.name.lowercase())
+                        )
                     }
+                    is RevenueStatsError -> _uiState.update { it.copy(revenueError = true) }
+                    PluginNotActive -> _uiState.update { it.copy(jetPackPluginNotActive = true) }
+                    is VisitorsStatsSuccess -> _uiState.update { it.copy(visitorsStats = result.stats) }
+                    is VisitorsStatsError -> _uiState.update { it.copy(visitorsError = true) }
+                    IsJetPackCPEnabled -> _uiState.update { it.copy(jetpackCpEnabled = true) }
+                    is HasOrders -> _uiState.update { it.copy(hasOrders = result.hasOrder) }
                 }
+            }
         }
-    }
-
-    private fun onRevenueStatsSuccess(
-        it: RevenueStatsSuccess,
-        selectedGranularity: StatsGranularity
-    ) {
-        _revenueStatsState.value = RevenueStatsViewState.Content(
-            it.stats?.toStoreStatsUiModel(),
-            selectedGranularity
-        )
-        AnalyticsTracker.track(
-            AnalyticsTracker.Stat.DASHBOARD_MAIN_STATS_LOADED,
-            mapOf(AnalyticsTracker.KEY_RANGE to activeStatsGranularity.name.lowercase())
-        )
-    }
-
-    private fun onJetPackCpConnected() {
-        val daysSinceDismissal = TimeUnit.MILLISECONDS.toDays(
-            System.currentTimeMillis() - appPrefsWrapper.getJetpackBenefitsDismissalDate()
-        )
-        val showBanner = daysSinceDismissal >= DAYS_TO_REDISPLAY_JP_BENEFITS_BANNER
-        val benefitsBanner =
-            BenefitsBannerUiModel(
-                show = showBanner,
-                onDismiss = {
-                    _visitorStatsState.value =
-                        VisitorStatsViewState.JetpackCpConnected(BenefitsBannerUiModel(show = false))
-                    appPrefsWrapper.recordJetpackBenefitsDismissal()
-                    AnalyticsTracker.track(
-                        stat = AnalyticsTracker.Stat.FEATURE_JETPACK_BENEFITS_BANNER,
-                        properties = mapOf(AnalyticsTracker.KEY_JETPACK_BENEFITS_BANNER_ACTION to "dismissed")
-                    )
-                }
-            )
-        _visitorStatsState.value = VisitorStatsViewState.JetpackCpConnected(benefitsBanner)
     }
 
     private fun loadTopPerformersStats() {
         if (!networkStatus.isConnected()) {
             refreshTopPerformerStats[activeStatsGranularity.ordinal] = true
-            _topPerformersState.value = TopPerformersViewState.Content(emptyList(), activeStatsGranularity)
+            _uiState.update { it.copy(topPerformers = emptyList()) }
             return
         }
 
@@ -195,26 +186,20 @@ class MyStoreViewModel @Inject constructor(
             refreshTopPerformerStats[activeStatsGranularity.ordinal] = false
         }
 
-        _topPerformersState.value = TopPerformersViewState.Loading
-        val selectedGranularity = activeStatsGranularity
+        _uiState.update { it.copy(isLoadingTopPerformers = true) }
         launch {
-            getTopPerformers(forceRefresh, selectedGranularity, NUM_TOP_PERFORMERS)
-                .collect {
-                    when (it) {
-                        is TopPerformersSuccess -> {
-                            _topPerformersState.value =
-                                TopPerformersViewState.Content(
-                                    it.topPerformers.toTopPerformersUiList(),
-                                    selectedGranularity
-                                )
-                            AnalyticsTracker.track(
-                                AnalyticsTracker.Stat.DASHBOARD_TOP_PERFORMERS_LOADED,
-                                mapOf(AnalyticsTracker.KEY_RANGE to activeStatsGranularity.name.lowercase())
-                            )
-                        }
-                        TopPerformersError -> _topPerformersState.value = TopPerformersViewState.Error
+            getTopPerformers(forceRefresh, activeStatsGranularity, NUM_TOP_PERFORMERS).collect { result ->
+                when (result) {
+                    is TopPerformersSuccess -> {
+                        _uiState.update { it.copy(topPerformers = result.topPerformers.toTopPerformersUiList()) }
+                        AnalyticsTracker.track(
+                            AnalyticsTracker.Stat.DASHBOARD_TOP_PERFORMERS_LOADED,
+                            mapOf(AnalyticsTracker.KEY_RANGE to activeStatsGranularity.name.lowercase())
+                        )
                     }
+                    TopPerformersError -> _uiState.update { it.copy(topPerformersError = true) }
                 }
+            }
         }
     }
 
@@ -231,6 +216,35 @@ class MyStoreViewModel @Inject constructor(
         triggerEvent(MyStoreEvent.OpenTopPerformer(productId))
         AnalyticsTracker.track(AnalyticsTracker.Stat.TOP_EARNER_PRODUCT_TAPPED)
     }
+
+    data class UiState(
+        val isLoadingRevenue: Boolean = false,
+        val revenueError: Boolean = false,
+        val revenueStats: RevenueStatsUiModel? = null,
+        val jetPackPluginNotActive: Boolean = false,
+
+        val visitorsError: Boolean = false,
+        val jetpackCpEnabled: Boolean = false,
+        val visitorsStats: Map<String, Int> = emptyMap(),
+
+        val isLoadingTopPerformers: Boolean = false,
+        val topPerformersError: Boolean = false,
+        val topPerformers: List<TopPerformerProductUiModel> = emptyList(),
+
+        val hasOrders: Boolean = false,
+        val jetpackBenefitsBanner: JetpackBenefitsBannerUiModel = JetpackBenefitsBannerUiModel(show = false)
+    )
+
+    sealed class MyStoreEvent : MultiLiveEvent.Event() {
+        data class OpenTopPerformer(
+            val productId: Long
+        ) : MyStoreEvent()
+    }
+
+    data class JetpackBenefitsBannerUiModel(
+        val show: Boolean = false,
+        val onDismiss: () -> Unit = {}
+    )
 
     private fun WCRevenueStatsModel.toStoreStatsUiModel(): RevenueStatsUiModel {
         val totals = parseTotal()
@@ -272,45 +286,4 @@ class MyStoreViewModel @Inject constructor(
             resourceProvider.getDimensionPixelSize(R.dimen.image_minor_100),
             0
         )
-
-    sealed class RevenueStatsViewState {
-        object Loading : RevenueStatsViewState()
-        object GenericError : RevenueStatsViewState()
-        object PluginNotActiveError : RevenueStatsViewState()
-        data class Content(
-            val revenueStats: RevenueStatsUiModel?,
-            val granularity: StatsGranularity
-        ) : RevenueStatsViewState()
-    }
-
-    sealed class VisitorStatsViewState {
-        object Error : VisitorStatsViewState()
-        data class JetpackCpConnected(
-            val benefitsBanner: BenefitsBannerUiModel
-        ) : VisitorStatsViewState()
-
-        data class Content(
-            val stats: Map<String, Int>
-        ) : VisitorStatsViewState()
-    }
-
-    sealed class TopPerformersViewState {
-        object Loading : TopPerformersViewState()
-        object Error : TopPerformersViewState()
-        data class Content(
-            val topPerformers: List<TopPerformerProductUiModel> = emptyList(),
-            val granularity: StatsGranularity
-        ) : TopPerformersViewState()
-    }
-
-    sealed class OrderState {
-        object Empty : OrderState()
-        object AtLeastOne : OrderState()
-    }
-
-    sealed class MyStoreEvent : MultiLiveEvent.Event() {
-        data class OpenTopPerformer(
-            val productId: Long
-        ) : MyStoreEvent()
-    }
 }
