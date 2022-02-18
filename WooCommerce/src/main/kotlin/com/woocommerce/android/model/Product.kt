@@ -151,6 +151,8 @@ data class Product(
                 shippingClass.isNotEmpty()
         }
     val productType get() = ProductType.fromCoreProductType(coreProductType, isVirtual)
+    // Plain product type - usually simple/grouped/external/variable but might be anything if the store uses plugins
+    val plainCoreProductType get() = coreProductType
     val variationEnabledAttributes
         get() = attributes.filter { it.isVariation }
 
@@ -439,7 +441,7 @@ fun Product.toDataModel(storedProductModel: WCProductModel? = null): WCProductMo
         it.menuOrder = menuOrder
         it.categories = categoriesToJson()
         it.tags = tagsToJson()
-        it.type = coreProductType
+        it.type = plainCoreProductType
         it.groupedProductIds = groupedProductIds.joinToString(
             separator = ",",
             prefix = "[",
