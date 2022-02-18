@@ -14,6 +14,10 @@ enum class ProductType(@StringRes val stringResource: Int = 0, val value: String
 
     companion object {
         fun fromCoreProductType(coreProductType: String, isVirtual: Boolean): ProductType {
+            if (isVirtual && coreProductType.lowercase() != "simple") {
+                // Virtual non-simple products are not known to the app => OTHER is returned
+                return OTHER
+            }
             return when (coreProductType.lowercase()) {
                 "grouped" -> GROUPED
                 "external" -> EXTERNAL
