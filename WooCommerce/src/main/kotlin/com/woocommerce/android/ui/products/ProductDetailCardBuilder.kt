@@ -389,7 +389,7 @@ class ProductDetailCardBuilder(
             VARIABLE -> resources.getString(string.product_type_variable)
             GROUPED -> resources.getString(string.product_type_grouped)
             EXTERNAL -> resources.getString(string.product_type_external)
-            OTHER -> this.type.capitalize() // show the actual product type string for unsupported products
+            OTHER -> this.coreProductType.capitalize() // show the actual product type string for unsupported products
         }
     }
 

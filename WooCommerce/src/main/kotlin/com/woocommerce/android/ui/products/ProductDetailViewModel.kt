@@ -643,7 +643,7 @@ class ProductDetailViewModel @Inject constructor(
         viewState.productDraft
             ?.takeIf {
                 isProductStoredAtSite.not() and
-                    (it.type == VARIABLE.value) and
+                    (it.coreProductType == VARIABLE.value) and
                     (it.status == DRAFT)
             }
             ?.takeIf { addProduct(it).first }
@@ -898,7 +898,7 @@ class ProductDetailViewModel @Inject constructor(
                 menuOrder = menuOrder ?: product.menuOrder,
                 categories = categories ?: product.categories,
                 tags = tags ?: product.tags,
-                type = type ?: product.type,
+                coreProductType = type ?: product.coreProductType,
                 groupedProductIds = groupedProductIds ?: product.groupedProductIds,
                 upsellProductIds = upsellProductIds ?: product.upsellProductIds,
                 crossSellProductIds = crossSellProductIds ?: product.crossSellProductIds,
