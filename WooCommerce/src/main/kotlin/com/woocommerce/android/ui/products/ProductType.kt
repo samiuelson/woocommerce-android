@@ -6,7 +6,7 @@ import com.woocommerce.android.util.WooLog
 import com.woocommerce.android.util.WooLog.T
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductType
 
-enum class ProductType(@StringRes val stringResource: Int = 0, val value: String = "") {
+enum class ProductType(@StringRes val stringResource: Int = 0, val coreProductType: String = "") {
     SIMPLE(R.string.product_type_simple, CoreProductType.SIMPLE.value),
     VIRTUAL(R.string.product_type_virtual, CoreProductType.SIMPLE.value),
     GROUPED(R.string.product_type_grouped, CoreProductType.GROUPED.value),

@@ -285,8 +285,8 @@ class ProductFilterListViewModel @Inject constructor(
                     ProductType.values().filterNot { it == OTHER || it == VIRTUAL }.map {
                         FilterListOptionItemUiModel(
                             resourceProvider.getString(it.stringResource),
-                            filterOptionItemValue = it.value,
-                            isSelected = productFilterOptions[TYPE] == it.value
+                            filterOptionItemValue = it.coreProductType,
+                            isSelected = productFilterOptions[TYPE] == it.coreProductType
                         )
                     }.toMutableList(),
                     productFilterOptions[TYPE].isNullOrEmpty()

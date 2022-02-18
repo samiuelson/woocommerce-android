@@ -43,7 +43,7 @@ class ProductTypesBottomSheetViewModel @Inject constructor(
 
     fun onProductTypeSelected(productTypeUiItem: ProductTypesBottomSheetUiItem) {
         if (navArgs.isAddProduct) {
-            val properties = mapOf("product_type" to productTypeUiItem.type.value.toLowerCase(ROOT))
+            val properties = mapOf("product_type" to productTypeUiItem.type.coreProductType.toLowerCase(ROOT))
             AnalyticsTracker.track(Stat.ADD_PRODUCT_PRODUCT_TYPE_SELECTED, properties)
 
             saveUserSelection(productTypeUiItem)
@@ -65,7 +65,7 @@ class ProductTypesBottomSheetViewModel @Inject constructor(
     }
 
     private fun saveUserSelection(productTypeUiItem: ProductTypesBottomSheetUiItem) {
-        prefs.setSelectedCoreProductType(productTypeUiItem.type.value)
+        prefs.setSelectedCoreProductType(productTypeUiItem.type.coreProductType)
         prefs.setSelectedProductIsVirtual(productTypeUiItem.isVirtual)
     }
 

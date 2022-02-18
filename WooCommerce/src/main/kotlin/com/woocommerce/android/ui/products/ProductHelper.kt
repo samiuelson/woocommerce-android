@@ -39,7 +39,7 @@ object ProductHelper {
             name = "",
             description = "",
             shortDescription = "",
-            coreProductType = productType.value,
+            coreProductType = productType.coreProductType,
             status = if (productType == VARIABLE) DRAFT else PUBLISH,
             catalogVisibility = VISIBLE,
             isFeatured = false,

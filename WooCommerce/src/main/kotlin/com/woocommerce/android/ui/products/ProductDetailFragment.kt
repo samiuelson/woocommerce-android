@@ -154,7 +154,7 @@ class ProductDetailFragment :
 
     private fun setupResultHandlers(viewModel: ProductDetailViewModel) {
         handleResult<ProductTypesBottomSheetUiItem>(ProductTypesBottomSheetFragment.KEY_PRODUCT_TYPE_RESULT) {
-            viewModel.updateProductDraft(type = it.type.value, isVirtual = it.isVirtual)
+            viewModel.updateProductDraft(type = it.type.coreProductType, isVirtual = it.isVirtual)
             changesMade()
         }
         handleResult<List<Long>>(GroupedProductListType.GROUPED.resultKey) {
