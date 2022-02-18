@@ -33,7 +33,7 @@ object ProductHelper {
      * Default Product for initial state of Product Add flow
      * */
 
-    fun getDefaultNewProduct(productType: ProductType, isVirtual: Boolean): Product {
+    fun getDefaultNewProduct(productType: ProductType): Product {
         return Product(
             remoteId = 0L,
             name = "",
@@ -49,7 +49,7 @@ object ProductHelper {
             firstImageUrl = null,
             totalSales = 0,
             reviewsAllowed = true,
-            isVirtual = isVirtual,
+            isVirtual = productType == ProductType.VIRTUAL,
             ratingCount = 0,
             averageRating = 0f,
             permalink = "",

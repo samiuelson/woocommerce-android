@@ -150,7 +150,7 @@ data class Product(
                 length > 0 || width > 0 || height > 0 ||
                 shippingClass.isNotEmpty()
         }
-    val productType get() = ProductType.fromCoreProductType(coreProductType)
+    val productType get() = ProductType.fromCoreProductType(coreProductType, isVirtual)
     val variationEnabledAttributes
         get() = attributes.filter { it.isVariation }
 
