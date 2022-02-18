@@ -242,9 +242,9 @@ class ProductDetailViewModel @Inject constructor(
     }
 
     private fun startAddNewProduct() {
-        val preferredSavedType = prefs.getSelectedProductType()
+        val preferredCoreProductType = prefs.getSelectedCoreProductType()
         val isProductVirtual = prefs.isSelectedProductVirtual()
-        val defaultProductType = ProductType.fromCoreProductType(preferredSavedType, isProductVirtual)
+        val defaultProductType = ProductType.fromCoreProductType(preferredCoreProductType, isProductVirtual)
         val defaultProduct = ProductHelper.getDefaultNewProduct(defaultProductType)
         viewState = viewState.copy(
             productDraft = ProductHelper.getDefaultNewProduct(defaultProductType)

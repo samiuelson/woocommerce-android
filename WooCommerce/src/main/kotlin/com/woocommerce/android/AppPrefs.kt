@@ -11,7 +11,6 @@ import com.woocommerce.android.AppPrefs.CardReaderOnboardingStatus.*
 import com.woocommerce.android.AppPrefs.DeletablePrefKey.*
 import com.woocommerce.android.tools.SelectedSite
 import com.woocommerce.android.ui.prefs.cardreader.onboarding.PluginType
-import com.woocommerce.android.ui.products.ProductType
 import com.woocommerce.android.util.PreferenceUtils
 import com.woocommerce.android.util.ThemeOption
 import com.woocommerce.android.util.ThemeOption.DEFAULT
@@ -338,9 +337,9 @@ object AppPrefs {
     fun getSelectedOrderListTabPosition() =
         getInt(DeletablePrefKey.SELECTED_ORDER_LIST_TAB_POSITION, -1)
 
-    fun setSelectedProductType(type: ProductType) = setString(DeletablePrefKey.SELECTED_PRODUCT_TYPE, type.value)
+    fun setSelectedCoreProductType(coreProductType: String) = setString(SELECTED_PRODUCT_TYPE, coreProductType)
 
-    fun getSelectedProductType(): String = getString(DeletablePrefKey.SELECTED_PRODUCT_TYPE, "")
+    fun getSelectedCoreProductType(): String = getString(DeletablePrefKey.SELECTED_PRODUCT_TYPE, "")
 
     fun setSelectedProductIsVirtual(isVirtual: Boolean) =
         setBoolean(DeletablePrefKey.SELECTED_PRODUCT_IS_VIRTUAL, isVirtual)

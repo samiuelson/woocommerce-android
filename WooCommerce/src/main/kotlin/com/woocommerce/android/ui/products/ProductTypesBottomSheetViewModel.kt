@@ -65,7 +65,7 @@ class ProductTypesBottomSheetViewModel @Inject constructor(
     }
 
     private fun saveUserSelection(productTypeUiItem: ProductTypesBottomSheetUiItem) {
-        prefs.setSelectedProductType(productTypeUiItem.type)
+        prefs.setSelectedCoreProductType(productTypeUiItem.type.value)
         prefs.setSelectedProductIsVirtual(productTypeUiItem.isVirtual)
     }
 

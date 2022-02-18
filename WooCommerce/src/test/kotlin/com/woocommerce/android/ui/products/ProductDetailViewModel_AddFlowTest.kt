@@ -82,7 +82,7 @@ class ProductDetailViewModel_AddFlowTest : BaseUnitTest() {
     }
 
     private val prefs: AppPrefs = mock {
-        on(it.getSelectedProductType()).then { "simple" }
+        on(it.getSelectedCoreProductType()).then { "simple" }
     }
     private val addonRepository: AddonRepository = mock {
         onBlocking { hasAnyProductSpecificAddons(any()) } doReturn false
