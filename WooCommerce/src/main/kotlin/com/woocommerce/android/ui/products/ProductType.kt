@@ -14,8 +14,8 @@ enum class ProductType(@StringRes val stringResource: Int = 0, val value: String
     OTHER;
 
     companion object {
-        fun fromString(type: String): ProductType {
-            return when (type.toLowerCase(Locale.US)) {
+        fun fromCoreProductType(coreProductType: String, isVirtual: Boolean): ProductType {
+            return when (coreProductType.lowercase()) {
                 "grouped" -> GROUPED
                 "external" -> EXTERNAL
                 "variable" -> VARIABLE
