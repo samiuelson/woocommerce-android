@@ -31,7 +31,7 @@ data class Product(
     val description: String,
     val shortDescription: String,
     val slug: String,
-    val coreProductType: String,
+    private val coreProductType: String,
     val status: ProductStatus?,
     val catalogVisibility: ProductCatalogVisibility?,
     val isFeatured: Boolean,
