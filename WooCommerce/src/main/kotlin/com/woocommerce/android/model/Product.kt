@@ -15,6 +15,7 @@ import com.woocommerce.android.ui.products.ProductStatus
 import com.woocommerce.android.ui.products.ProductStockStatus
 import com.woocommerce.android.ui.products.ProductTaxStatus
 import com.woocommerce.android.ui.products.ProductType
+import com.woocommerce.android.ui.products.ProductType.VIRTUAL
 import com.woocommerce.android.ui.products.settings.ProductCatalogVisibility
 import kotlinx.parcelize.Parcelize
 import org.wordpress.android.fluxc.model.MediaModel
@@ -32,6 +33,7 @@ data class Product(
     val shortDescription: String,
     val slug: String,
     private val coreProductType: String,
+    val productType: ProductType,
     val status: ProductStatus?,
     val catalogVisibility: ProductCatalogVisibility?,
     val isFeatured: Boolean,
@@ -41,7 +43,6 @@ data class Product(
     val firstImageUrl: String?,
     val totalSales: Long,
     val reviewsAllowed: Boolean,
-    val isVirtual: Boolean,
     val ratingCount: Int,
     val averageRating: Float,
     val permalink: String,
@@ -105,6 +106,7 @@ data class Product(
             sku == product.sku &&
             slug == product.slug &&
             coreProductType == product.coreProductType &&
+            productType == product.productType &&
             name.fastStripHtml() == product.name.fastStripHtml() &&
             description == product.description &&
             shortDescription == product.shortDescription &&
@@ -119,7 +121,6 @@ data class Product(
             length == product.length &&
             height == product.height &&
             width == product.width &&
-            isVirtual == product.isVirtual &&
             shippingClass == product.shippingClass &&
             shippingClassId == product.shippingClassId &&
             catalogVisibility == product.catalogVisibility &&
@@ -150,7 +151,6 @@ data class Product(
                 length > 0 || width > 0 || height > 0 ||
                 shippingClass.isNotEmpty()
         }
-    val productType get() = ProductType.fromCoreProductType(coreProductType, isVirtual)
     // Plain product type - usually simple/grouped/external/variable but might be anything if the store uses plugins
     val plainCoreProductType get() = coreProductType
     val variationEnabledAttributes
@@ -188,7 +188,7 @@ data class Product(
                 reviewsAllowed != it.reviewsAllowed ||
                 purchaseNote != it.purchaseNote ||
                 menuOrder != it.menuOrder ||
-                isVirtual != it.isVirtual ||
+                productType != it.productType ||
                 isDownloadable != it.isDownloadable
         } ?: false
     }
@@ -298,7 +298,6 @@ data class Product(
                 isSoldIndividually = updatedProduct.isSoldIndividually,
                 regularPrice = updatedProduct.regularPrice,
                 salePrice = updatedProduct.salePrice,
-                isVirtual = updatedProduct.isVirtual,
                 isSaleScheduled = updatedProduct.isSaleScheduled,
                 saleStartDateGmt = updatedProduct.saleStartDateGmt,
                 saleEndDateGmt = updatedProduct.saleEndDateGmt,
@@ -318,6 +317,7 @@ data class Product(
                 menuOrder = updatedProduct.menuOrder,
                 categories = updatedProduct.categories,
                 tags = updatedProduct.tags,
+                productType = updatedProduct.productType,
                 coreProductType = updatedProduct.coreProductType,
                 groupedProductIds = updatedProduct.groupedProductIds,
                 crossSellProductIds = updatedProduct.crossSellProductIds,
@@ -425,7 +425,7 @@ fun Product.toDataModel(storedProductModel: WCProductModel? = null): WCProductMo
         it.taxClass = taxClass
         it.images = imagesToJson()
         it.reviewsAllowed = reviewsAllowed
-        it.virtual = isVirtual
+        it.virtual = productType == VIRTUAL
         if (isSaleScheduled) {
             saleStartDateGmt?.let { dateOnSaleFrom ->
                 it.dateOnSaleFromGmt = dateOnSaleFrom.formatToYYYYmmDDhhmmss()
@@ -473,6 +473,7 @@ fun WCProductModel.toAppModel(): Product {
         description = this.description,
         shortDescription = this.shortDescription,
         coreProductType = this.type,
+        productType = ProductType.fromCoreProductType(this.type, this.virtual),
         status = ProductStatus.fromString(this.status),
         catalogVisibility = ProductCatalogVisibility.fromString(this.catalogVisibility),
         isFeatured = this.featured,
@@ -482,7 +483,6 @@ fun WCProductModel.toAppModel(): Product {
         firstImageUrl = this.getFirstImageUrl(),
         totalSales = this.totalSales,
         reviewsAllowed = this.reviewsAllowed,
-        isVirtual = this.virtual,
         ratingCount = this.ratingCount,
         averageRating = this.averageRating.toFloatOrNull() ?: 0f,
         permalink = this.permalink,

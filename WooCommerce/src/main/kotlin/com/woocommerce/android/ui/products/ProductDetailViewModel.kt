@@ -25,6 +25,7 @@ import com.woocommerce.android.ui.products.ProductDetailViewModel.ProductExitEve
 import com.woocommerce.android.ui.products.ProductNavigationTarget.*
 import com.woocommerce.android.ui.products.ProductStatus.*
 import com.woocommerce.android.ui.products.ProductType.VARIABLE
+import com.woocommerce.android.ui.products.ProductType.VIRTUAL
 import com.woocommerce.android.ui.products.addons.AddonRepository
 import com.woocommerce.android.ui.products.categories.ProductCategoriesRepository
 import com.woocommerce.android.ui.products.categories.ProductCategoryItemUiModel
@@ -878,7 +879,6 @@ class ProductDetailViewModel @Inject constructor(
                 images = images ?: product.images,
                 regularPrice = regularPrice ?: product.regularPrice,
                 salePrice = salePrice ?: product.salePrice,
-                isVirtual = isVirtual ?: product.isVirtual,
                 taxStatus = taxStatus ?: product.taxStatus,
                 taxClass = taxClass ?: product.taxClass,
                 length = length ?: product.length,
