@@ -71,15 +71,9 @@ internal class PaymentManager(
 
         if (paymentIntent.status == PaymentIntentStatus.REQUIRES_PAYMENT_METHOD) {
             paymentIntent = collectPayment(paymentIntent)
-            if (paymentIntent.status != PaymentIntentStatus.REQUIRES_CONFIRMATION) {
-                return@flow
-            }
         }
         if (paymentIntent.status == PaymentIntentStatus.REQUIRES_CONFIRMATION) {
             paymentIntent = processPayment(paymentIntent)
-            if (paymentIntent.status != PaymentIntentStatus.REQUIRES_CAPTURE) {
-                return@flow
-            }
         }
 
         if (paymentIntent.status == PaymentIntentStatus.REQUIRES_CAPTURE) {
@@ -87,6 +81,11 @@ internal class PaymentManager(
                 capturePayment(receiptUrl, orderId, cardReaderStore, paymentIntent)
             }
         }
+    }
+
+    private fun isSuccessfulInteracPayment(paymentIntent: PaymentIntent): Boolean {
+        return paymentIntent.getCharges().getOrNull(0)?.paymentMethodDetails?.interacPresentDetails != null &&
+            paymentIntent.status == PaymentIntentStatus.SUCCEEDED
     }
 
     private suspend fun FlowCollector<CardPaymentStatus>.retrieveReceiptUrl(
