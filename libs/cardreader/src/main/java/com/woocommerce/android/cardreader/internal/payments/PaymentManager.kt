@@ -3,6 +3,8 @@ package com.woocommerce.android.cardreader.internal.payments
 import com.stripe.stripeterminal.external.models.PaymentIntent
 import com.stripe.stripeterminal.external.models.PaymentIntentStatus
 import com.stripe.stripeterminal.external.models.PaymentIntentStatus.CANCELED
+import com.stripe.stripeterminal.external.models.PaymentIntentStatus.REQUIRES_CAPTURE
+import com.stripe.stripeterminal.external.models.PaymentIntentStatus.REQUIRES_CONFIRMATION
 import com.woocommerce.android.cardreader.CardReaderStore
 import com.woocommerce.android.cardreader.CardReaderStore.CapturePaymentResponse
 import com.woocommerce.android.cardreader.internal.config.CardReaderConfigFactory
@@ -75,14 +77,22 @@ internal class PaymentManager(
                 return@flow
             }
         }
-        if (paymentIntent.status == PaymentIntentStatus.REQUIRES_CONFIRMATION) {
+        finishRegularCard(paymentIntent, orderId)
+    }
+
+    private suspend fun FlowCollector<CardPaymentStatus>.finishRegularCard(
+        originalPaymentIntent: PaymentIntent,
+        orderId: Long
+    ) {
+        var paymentIntent = originalPaymentIntent
+        if (paymentIntent.status == REQUIRES_CONFIRMATION) {
             paymentIntent = processPayment(paymentIntent)
-            if (paymentIntent.status != PaymentIntentStatus.REQUIRES_CAPTURE) {
-                return@flow
+            if (paymentIntent.status != REQUIRES_CAPTURE) {
+                return
             }
         }
 
-        if (paymentIntent.status == PaymentIntentStatus.REQUIRES_CAPTURE) {
+        if (paymentIntent.status == REQUIRES_CAPTURE) {
             retrieveReceiptUrl(paymentIntent)?.let { receiptUrl ->
                 capturePayment(receiptUrl, orderId, cardReaderStore, paymentIntent)
             }
