@@ -5,6 +5,7 @@ import com.stripe.stripeterminal.external.models.PaymentIntentStatus
 import com.stripe.stripeterminal.external.models.PaymentIntentStatus.CANCELED
 import com.stripe.stripeterminal.external.models.PaymentIntentStatus.REQUIRES_CAPTURE
 import com.stripe.stripeterminal.external.models.PaymentIntentStatus.REQUIRES_CONFIRMATION
+import com.stripe.stripeterminal.external.models.PaymentIntentStatus.SUCCEEDED
 import com.woocommerce.android.cardreader.CardReaderStore
 import com.woocommerce.android.cardreader.CardReaderStore.CapturePaymentResponse
 import com.woocommerce.android.cardreader.internal.config.CardReaderConfigFactory
@@ -77,10 +78,14 @@ internal class PaymentManager(
                 return@flow
             }
         }
-        finishRegularCard(paymentIntent, orderId)
+        if (!isInteracPayment(paymentIntent)) {
+            finishPaymentWithRegularCard(paymentIntent, orderId)
+        } else {
+            finishPaymentWithInteracCard(paymentIntent, orderId)
+        }
     }
 
-    private suspend fun FlowCollector<CardPaymentStatus>.finishRegularCard(
+    private suspend fun FlowCollector<CardPaymentStatus>.finishPaymentWithRegularCard(
         originalPaymentIntent: PaymentIntent,
         orderId: Long
     ) {
@@ -97,6 +102,28 @@ internal class PaymentManager(
                 capturePayment(receiptUrl, orderId, cardReaderStore, paymentIntent)
             }
         }
+    }
+
+    private suspend fun FlowCollector<CardPaymentStatus>.finishPaymentWithInteracCard(
+        originalPaymentIntent: PaymentIntent,
+        orderId: Long
+    ) {
+        var paymentIntent = originalPaymentIntent
+        if (paymentIntent.status == REQUIRES_CONFIRMATION) {
+            paymentIntent = processPayment(paymentIntent)
+            if (paymentIntent.status != SUCCEEDED) {
+                return
+            }
+        }
+        if (paymentIntent.status == SUCCEEDED) {
+            retrieveReceiptUrl(paymentIntent)?.let { receiptUrl ->
+                capturePayment(receiptUrl, orderId, cardReaderStore, paymentIntent)
+            }
+        }
+    }
+
+    private fun isInteracPayment(paymentIntent: PaymentIntent): Boolean {
+        return paymentIntent.getCharges().getOrNull(0)?.paymentMethodDetails?.interacPresentDetails != null
     }
 
     private suspend fun FlowCollector<CardPaymentStatus>.retrieveReceiptUrl(
