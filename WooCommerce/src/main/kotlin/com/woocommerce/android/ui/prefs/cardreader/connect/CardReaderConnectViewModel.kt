@@ -220,7 +220,7 @@ class CardReaderConnectViewModel @Inject constructor(
         if (cardReaderManager.readerStatus.value !is CardReaderStatus.Connecting) {
             cardReaderManager
                 .discoverReaders(
-                    isSimulated = BuildConfig.USE_SIMULATED_READER,
+                    isSimulated = true,
                     cardReaderTypesToDiscover = CardReaderTypesToDiscover.SpecificReaders(
                         listOf(SpecificReader.Chipper2X, SpecificReader.StripeM2, SpecificReader.WisePade3)
                     )
