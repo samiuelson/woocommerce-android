@@ -14,6 +14,7 @@ enum class FeatureFlag {
     PAYMENTS_STRIPE_EXTENSION,
     IN_PERSON_PAYMENTS_CANADA,
     MORE_MENU_INBOX,
+    CARD_READER_MANUALS,
     MORE_MENU_COUPONS;
 
     fun isEnabled(context: Context? = null): Boolean {
@@ -28,6 +29,7 @@ enum class FeatureFlag {
             ORDER_FILTERS,
             ANALYTICS_HUB,
             IN_PERSON_PAYMENTS_CANADA,
+            CARD_READER_MANUALS,
             MORE_MENU_INBOX,
             MORE_MENU_COUPONS -> PackageUtils.isDebugBuild()
         }

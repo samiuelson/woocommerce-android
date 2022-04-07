@@ -111,6 +111,9 @@
             android:name="storeCountryCode"
             app:nullable="false"
             app:argType="string" />
+        <action
+            android:id="@+id/action_cardReaderHubFragment_to_cardReaderManualsFragment"
+            app:destination="@id/cardReaderManualsFragment" />
     </fragment>
     <fragment
         android:id="@+id/privacySettingsFragment"
@@ -178,4 +181,8 @@
     </fragment>
     <action android:id="@+id/action_global_WPComWebViewFragment" app:destination="@id/WPComWebViewFragment"/>
     <include app:graph="@navigation/nav_graph_jetpack_install" />
+    <fragment
+        android:id="@+id/cardReaderManualsFragment"
+        android:name="com.woocommerce.android.ui.prefs.cardreader.hub.CardReaderManualsFragment"
+        android:label="CardReaderManualsFragment" />
 </navigation>

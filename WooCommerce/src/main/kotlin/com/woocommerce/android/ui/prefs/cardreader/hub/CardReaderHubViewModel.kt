@@ -70,24 +70,25 @@ class CardReaderHubViewModel @Inject constructor(
                 icon = R.drawable.ic_card_reader_manual,
                 label = UiString.UiStringRes(R.string.card_reader_m2_manual_card_reader),
                 onItemClicked = ::onM2ManualCardReaderClicked
+            ),
+            CardReaderHubListItemViewState(
+                icon = R.drawable.ic_card_reader_manual,
+                label = UiString.UiStringRes(R.string.card_reader_manuals),
+                onItemClicked = :: onCardReaderManualsClicked
+
             )
-        ).apply {
-            if (inPersonPaymentsCanadaFeatureFlag.isEnabled()) {
-                add(
-                    CardReaderHubListItemViewState(
-                        icon = R.drawable.ic_card_reader_manual,
-                        label = UiString.UiStringRes(R.string.card_reader_wisepad_3_manual_card_reader),
-                        onItemClicked = ::onWisePad3ManualCardReaderClicked
-                    )
-                )
-            }
-        }.toImmutableList()
+
+        ).toImmutableList()
     )
 
     val viewStateData: LiveData<CardReaderHubViewState> = viewState
 
     private fun onManageCardReaderClicked() {
         triggerEvent(CardReaderHubEvents.NavigateToCardReaderDetail)
+    }
+
+    private fun onCardReaderManualsClicked() {
+        triggerEvent(CardReaderHubEvents.NavigateToCardReaderManuals)
     }
 
     private fun onPurchaseCardReaderClicked() {
@@ -108,6 +109,7 @@ class CardReaderHubViewModel @Inject constructor(
 
     sealed class CardReaderHubEvents : MultiLiveEvent.Event() {
         object NavigateToCardReaderDetail : CardReaderHubEvents()
+        object NavigateToCardReaderManuals: CardReaderHubEvents()
         data class NavigateToPurchaseCardReaderFlow(val url: String) : CardReaderHubEvents()
         data class NavigateToManualCardReaderFlow(val url: String) : CardReaderHubEvents()
     }
