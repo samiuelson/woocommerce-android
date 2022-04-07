@@ -11,7 +11,6 @@ import javax.inject.Inject
 @HiltViewModel
 class CardReaderManualsViewModel @Inject constructor(
     savedState: SavedStateHandle,
-    private val cardReaderManualsFeatureFlag: CardReaderManualsFeatureFlag,
     private val appPrefsWrapper: AppPrefsWrapper,
     private val selectedSite: SelectedSite
 ) : ScopedViewModel(savedState) {
