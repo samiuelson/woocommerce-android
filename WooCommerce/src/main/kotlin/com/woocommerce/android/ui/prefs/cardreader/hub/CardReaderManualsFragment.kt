@@ -43,4 +43,6 @@ class CardReaderManualsFragment : BaseFragment(R.layout.fragment_card_reader_man
         super.onDestroyView()
         _binding = null
     }
+
+    override fun getFragmentTitle() = resources.getString(R.string.card_reader_manuals)
 }

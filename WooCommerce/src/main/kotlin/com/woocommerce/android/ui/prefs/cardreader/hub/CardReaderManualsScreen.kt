@@ -14,10 +14,17 @@ import androidx.compose.ui.unit.dp
 import com.woocommerce.android.R
 
 @Composable
+fun CardReaderManualsScreen(viewModel: CardReaderManualsViewModel) {
+    TopAppBar() {
+    }
+    ManualsList()
+}
+
+@Composable
 fun ImageListItem () {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Image(
-            painter = painterResource(id = R.drawable.ic_card_reader_manual),
+            painter = painterResource(id = R.drawable.ic_p400),
             contentDescription = null,
             modifier = Modifier.size(50.dp)
         )
@@ -30,21 +37,11 @@ fun ImageListItem () {
 fun ManualsList (modifier: Modifier = Modifier) {
 
     Column() {
-        repeat(5) {
+        repeat(2) {
             ImageListItem()
         }
     }
 }
-
-@Composable
-fun CardReaderManualsScreen(viewModel: CardReaderManualsViewModel) {
-    TopAppBar() {
-
-    }
-    ManualsList()
-
-}
-
 //@Preview
 //@Composable
 //fun ManualListPreview() {
