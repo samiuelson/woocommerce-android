@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.woocommerce.android.R
 import com.woocommerce.android.databinding.FragmentCardReaderManualsBinding
 import com.woocommerce.android.ui.base.BaseFragment
@@ -39,6 +40,21 @@ class CardReaderManualsFragment : BaseFragment(R.layout.fragment_card_reader_man
         return view
 
     }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupObservers()
+    }
+
+    private fun setupObservers() {
+        viewModel.event.observe(viewLifecycleOwner) { event ->
+            when (event) {
+
+            }
+
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

@@ -2287,4 +2287,6 @@
     <string name="about_automattic_app_icon_description">App icon</string>
     <string name="error_generic">An error occurred</string>
     <string name="card_reader_manuals">Card Reader Manuals</string>
+    <string name="bbpos_reader">BBPOS Chipper™ 2X BT</string>
+    <string name="p400_reader">Verifone® P400 Card Reader</string>
 </resources>
