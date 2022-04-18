@@ -18,55 +18,6 @@ import androidx.compose.ui.unit.dp
 import com.woocommerce.android.R
 
 
-//@Composable
-//fun CardReaderManualsScreen (viewModel: CardReaderManualsViewModel) {
-//    val manualListState by viewModel.manualState.observeAsState(CardReaderManualsViewModel.ManualsListState())
-//    CardReaderManualsScreen()
-//}
-
-//@Composable
-//fun CardReaderManualsScreen () {
-//    WooTheme {
-//        ManualsList()
-//    }
-//}
-//
-//@Composable
-//fun ManualsList () {
-//    Column(
-//    ) {
-//        repeat(3) {
-//            ManualListItem()
-//        }
-//    }
-//}
-//
-//@Composable
-//fun ManualListItem() {
-//    Row (
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(horizontal = 16.dp, vertical = 8.dp)
-//            .clickable(
-//                enabled = true,
-//                onClickLabel = stringResource(id = R.string.p400_reader),
-//                role = Role.Button,
-//                onClick = { }
-//            )
-//    ) {
-//        Image(
-//            painter = painterResource(R.drawable.ic_p400),
-//            contentDescription = null )
-//        Column (
-//            modifier = Modifier
-//                .padding(horizontal = 16.dp)
-//                .align(Alignment.CenterVertically)
-//        ){
-//            Text("Test text" )
-//        }
-//
-//    }
-//}
 
 @Composable
 fun CardReaderManualsScreen (viewModel: CardReaderManualsViewModel) {
@@ -136,5 +87,55 @@ fun ManualListItem(
     }
 }
 
+// using the code below with a regular Column in the ManualList() composable function the screen works fine.
 
 
+//@Composable
+//fun CardReaderManualsScreen (viewModel: CardReaderManualsViewModel) {
+//    val manualListState by viewModel.manualState.observeAsState(CardReaderManualsViewModel.ManualsListState())
+//    CardReaderManualsScreen()
+//}
+
+//@Composable
+//fun CardReaderManualsScreen () {
+//    WooTheme {
+//        ManualsList()
+//    }
+//}
+//
+//@Composable
+//fun ManualsList () {
+//    Column(
+//    ) {
+//        repeat(3) {
+//            ManualListItem()
+//        }
+//    }
+//}
+//
+//@Composable
+//fun ManualListItem() {
+//    Row (
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(horizontal = 16.dp, vertical = 8.dp)
+//            .clickable(
+//                enabled = true,
+//                onClickLabel = stringResource(id = R.string.p400_reader),
+//                role = Role.Button,
+//                onClick = { }
+//            )
+//    ) {
+//        Image(
+//            painter = painterResource(R.drawable.ic_p400),
+//            contentDescription = null )
+//        Column (
+//            modifier = Modifier
+//                .padding(horizontal = 16.dp)
+//                .align(Alignment.CenterVertically)
+//        ){
+//            Text("Test text" )
+//        }
+//
+//    }
+//}
