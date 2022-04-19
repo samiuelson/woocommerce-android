@@ -1,5 +1,6 @@
 package com.woocommerce.android.ui.prefs.cardreader.hub
 
+import android.content.ClipData
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -20,59 +21,12 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.woocommerce.android.R
 
-//@Composable
-//fun CardReaderManualsScreen (viewModel: CardReaderManualsViewModel) {
-//    val manualListState by viewModel.manualState.observeAsState(CardReaderManualsViewModel.ManualsListState())
-//    CardReaderManualsScreen()
-//}
-//
-//@Composable
-//fun CardReaderManualsScreen () {
-//    WooTheme {
-//        ManualsList()
-//    }
-//}
-//
-//@Composable
-//fun ManualsList () {
-//    Column(
-//    ) {
-//        repeat(3) {
-//            ManualListItem()
-//        }
-//    }
-//}
-//
-//@Composable
-//fun ManualListItem() {
-//    Row (
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(horizontal = 16.dp, vertical = 8.dp)
-//            .clickable(
-//                enabled = true,
-//                onClickLabel = stringResource(id = R.string.p400_reader),
-//                role = Role.Button,
-//                onClick = { }
-//            )
-//    ) {
-//        Image(
-//            painter = painterResource(R.drawable.ic_p400),
-//            contentDescription = null )
-//        Column (
-//            modifier = Modifier
-//                .padding(horizontal = 16.dp)
-//                .align(Alignment.CenterVertically)
-//        ){
-//            Text("Test text" )
-//        }
-//
-//    }
-//}
 
 @Composable
 fun CardReaderManualsScreen(viewModel: CardReaderManualsViewModel) {
-    val manualListState by viewModel.manualState.observeAsState(CardReaderManualsViewModel.ManualsListState())
+    val manualListState by viewModel.manualState.observeAsState(
+        CardReaderManualsViewModel.ManualsListState()
+    )
 
     CardReaderManualsScreen(
         state = manualListState,
@@ -135,5 +89,68 @@ fun ManualListItem(
     }
 }
 
+@Composable
+fun ManualsSkeleton () {
+    LazyColumn {
+        repeat(3) {
+            item {
 
+            }
+        }
+    }
+}
 
+@Composable
+fun ManualItemSkeleton() {
+
+}
+
+//@Composable
+//fun CardReaderManualsScreen (viewModel: CardReaderManualsViewModel) {
+//    val manualListState by viewModel.manualState.observeAsState(CardReaderManualsViewModel.ManualsListState())
+//    CardReaderManualsScreen()
+//}
+//
+//@Composable
+//fun CardReaderManualsScreen () {
+//    WooTheme {
+//        ManualsList()
+//    }
+//}
+//
+//@Composable
+//fun ManualsList () {
+//    Column(
+//    ) {
+//        repeat(3) {
+//            ManualListItem()
+//        }
+//    }
+//}
+//
+//@Composable
+//fun ManualListItem() {
+//    Row (
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(horizontal = 16.dp, vertical = 8.dp)
+//            .clickable(
+//                enabled = true,
+//                onClickLabel = stringResource(id = R.string.p400_reader),
+//                role = Role.Button,
+//                onClick = { }
+//            )
+//    ) {
+//        Image(
+//            painter = painterResource(R.drawable.ic_p400),
+//            contentDescription = null )
+//        Column (
+//            modifier = Modifier
+//                .padding(horizontal = 16.dp)
+//                .align(Alignment.CenterVertically)
+//        ){
+//            Text("Test text" )
+//        }
+//
+//    }
+//}
