@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -87,22 +88,6 @@ fun ManualListItem(
         }
 
     }
-}
-
-@Composable
-fun ManualsSkeleton () {
-    LazyColumn {
-        repeat(3) {
-            item {
-
-            }
-        }
-    }
-}
-
-@Composable
-fun ManualItemSkeleton() {
-
 }
 
 //@Composable
