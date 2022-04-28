@@ -23,7 +23,6 @@ import javax.inject.Inject
 class CardReaderHubViewModel @Inject constructor(
     savedState: SavedStateHandle,
     private val inPersonPaymentsCanadaFeatureFlag: InPersonPaymentsCanadaFeatureFlag,
-    private val cardReaderManualsFeatureFlag: CardReaderManualsFeatureFlag,
     private val appPrefsWrapper: AppPrefsWrapper,
     private val selectedSite: SelectedSite,
 ) : ScopedViewModel(savedState) {
