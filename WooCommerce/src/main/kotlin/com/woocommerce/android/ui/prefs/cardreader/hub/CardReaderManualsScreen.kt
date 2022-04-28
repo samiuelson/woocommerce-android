@@ -39,13 +39,13 @@ fun ManualListItem(
     Row(
         modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
             .clickable { onManualClick }
 
     ) {
         Image(
             painterResource(manualIcon),
-            contentDescription = null
+            contentDescription = null,
+            modifier = Modifier.padding(16.dp)
         )
         Column(
             modifier = Modifier

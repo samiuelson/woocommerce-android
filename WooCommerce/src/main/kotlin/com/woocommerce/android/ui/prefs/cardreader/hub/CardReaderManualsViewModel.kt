@@ -30,7 +30,7 @@ class CardReaderManualsViewModel @Inject constructor(
             ),
         ManualItem(
             R.drawable.ic_p400,
-            "Verifone® P400 Card Reader",
+            "Stripe M2 Reader",
             onManualClicked = ::onP400ManualCliked
         )
     )
