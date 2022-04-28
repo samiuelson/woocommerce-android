@@ -59,7 +59,7 @@ fun ManualListItem(
 
 @Composable
 fun ManualsList (
-    list: List<ManualItem>
+    list: List<CardReaderManualsViewModel.ManualItem>
 ) {
     LazyColumn(
         modifier = Modifier

@@ -21,33 +21,39 @@ class CardReaderManualsViewModel @Inject constructor(
     val manualState: List<ManualItem>
     get() = _manualState
 
-//    fun onManualClick(manualURL: AppUrls) {
-//
-//        triggerEvent(NavigateToManualEvent(manualURL))
-//    }
-//
-//    data class NavigateToManualEvent(val manualUrl: AppUrls) : MultiLiveEvent.Event()
-}
+    private fun getManualItems() = listOf(
+        ManualItem(
+            R.drawable.ic_bbposchipper,
+            "BBPOS Chipper™ 2X BT",
+            onManualClicked = ::onBbposManualCliked
 
-private fun getManualItems() = listOf(
-    ManualItem(
-        R.drawable.ic_bbposchipper,
-        "BBPOS Chipper™ 2X BT"
-    ),
-    ManualItem(
-        R.drawable.ic_p400,
-        "Verifone® P400 Card Reader"
+            ),
+        ManualItem(
+            R.drawable.ic_p400,
+            "Verifone® P400 Card Reader",
+            onManualClicked = ::onP400ManualCliked
+        )
     )
-)
 
+    private fun onBbposManualCliked() {
+        triggerEvent(ManualsEvents.NavigateToCardReaderManualFlow(AppUrls.BBPOS_MANUAL_CARD_READER))
+    }
 
-sealed class CardReaderManualsViewState {
-    abstract val rows: List<ManualItem>
+    private fun onP400ManualCliked() {
+        triggerEvent(ManualsEvents.NavigateToCardReaderManualFlow(AppUrls.BBPOS_MANUAL_CARD_READER))
+    }
 
-    data class Content(override val rows: List<ManualItem>) : CardReaderManualsViewState()
+    sealed class ManualsEvents: MultiLiveEvent.Event() {
+        data class NavigateToCardReaderManualFlow(val url: String): ManualsEvents()
+    }
+
+    data class ManualItem(
+        val icon: Int,
+        val label: String,
+        val onManualClicked: () -> Unit
+    )
+
 }
 
-data class ManualItem(
-    val icon: Int,
-    val label: String,
-)
+
+
