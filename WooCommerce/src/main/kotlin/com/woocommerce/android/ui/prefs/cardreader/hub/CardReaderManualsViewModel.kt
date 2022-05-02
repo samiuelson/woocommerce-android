@@ -48,7 +48,7 @@ class CardReaderManualsViewModel @Inject constructor(
     data class ManualItem(
         val icon: Int,
         val label: String,
-        val onManualClicked: () -> Unit = {}
+        val onManualClicked: () -> Unit
     )
 
 }
