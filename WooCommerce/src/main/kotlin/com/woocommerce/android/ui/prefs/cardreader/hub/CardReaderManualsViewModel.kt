@@ -22,13 +22,13 @@ class CardReaderManualsViewModel @Inject constructor(
     private fun getManualItems(): List<ManualItem> = listOf(
         ManualItem(
             R.drawable.ic_bbposchipper,
-            "BBPOS Chipper™ 2X BT",
+            R.string.bbpos_reader,
             onManualClicked = ::onBbposManualCliked
 
             ),
         ManualItem(
             R.drawable.ic_p400,
-            "Stripe M2 Reader",
+            R.string.M2_reader,
             onManualClicked = ::onM2anualCliked
         )
     )
@@ -47,7 +47,7 @@ class CardReaderManualsViewModel @Inject constructor(
 
     data class ManualItem(
         val icon: Int,
-        val label: String,
+        val label: Int,
         val onManualClicked: () -> Unit
     )
 

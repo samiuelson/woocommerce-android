@@ -14,10 +14,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.woocommerce.android.R
+import com.woocommerce.android.util.UiHelpers
 
 @Composable
 fun ManualsScreen(
@@ -39,12 +41,12 @@ fun ManualListItem(
     Row(
         modifier
             .fillMaxWidth()
-            .clickable (
+            .clickable(
                 enabled = true,
                 onClickLabel = null,
                 role = Role.Button,
                 onClick = onManualClick
-                )
+            )
 
     ) {
         Image(
@@ -75,9 +77,10 @@ fun ManualsList (
             items = list
         ) { manual ->
             ManualListItem(
-                manualLabel = manual.label,
+                manualLabel = stringResource(id = manual.label),
                 manualIcon = manual.icon,
-                onManualClick = { })
+                onManualClick = manual.onManualClicked
+            )
             Divider(
                 modifier = Modifier
                     .offset(x = 96.dp),
