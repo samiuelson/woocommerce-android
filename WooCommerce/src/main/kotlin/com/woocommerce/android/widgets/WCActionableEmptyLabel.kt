@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.annotation.StringRes
 import com.woocommerce.android.databinding.WcActionableEmptyLabelBinding
+import com.woocommerce.android.extensions.selectAll
 
 /**
  * Simple ViewGroup which contains two views:
@@ -17,6 +18,17 @@ import com.woocommerce.android.databinding.WcActionableEmptyLabelBinding
 class WCActionableEmptyLabel @JvmOverloads constructor(ctx: Context, attrs: AttributeSet? = null) :
     FrameLayout(ctx, attrs) {
     private val binding = WcActionableEmptyLabelBinding.inflate(LayoutInflater.from(context), this, true)
+
+    init {
+        binding.notEmptyLabel.setSelectAllOnFocus(true)
+        binding.notEmptyLabel.setOnClickListener {
+            (binding.root.parent as View).performClick()
+        }
+        binding.root.setOnLongClickListener {
+            binding.notEmptyLabel.selectAll()
+            true
+        }
+    }
 
     /**
      * @param text - the text to appear if it's not empty
